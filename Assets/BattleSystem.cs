@@ -10,7 +10,8 @@ public class BattleSystem : MonoBehaviour
 {
 
     public GameObject playerPrefab;
-    public GameObject enemyPrefab;
+    public GameObject[] enemyPrefabs = new GameObject[4];
+    public int enemyindex = 0;
 
     public Transform playerBattleStation;
     public Transform enemyBattleStation;
@@ -33,9 +34,12 @@ public class BattleSystem : MonoBehaviour
     }
     IEnumerator SetupBattle()
     {
+        if (enemyUnit != null)
+            Destroy(enemyUnit.gameObject);
+
         GameObject playerGo = Instantiate(playerPrefab, playerBattleStation);
         playerUnit = playerGo.GetComponent<Unit>();
-        GameObject enemyGo = Instantiate(enemyPrefab, enemyBattleStation);
+        GameObject enemyGo = Instantiate(enemyPrefabs[enemyindex], enemyBattleStation);
         enemyUnit = enemyGo.GetComponent<Unit>();
 
         dialogueText.text = "A " + enemyUnit.unitName + " approaches...";
@@ -61,7 +65,7 @@ public class BattleSystem : MonoBehaviour
         if (isDead)
         {
             state = BattleState.WON;
-            EndBattle();
+            StartCoroutine(EndBattle());
         }
         else
         {
@@ -85,7 +89,7 @@ public class BattleSystem : MonoBehaviour
         if (isDead)
         {
             state = BattleState.LOST;
-            EndBattle();
+            StartCoroutine(EndBattle());
         }
         else
         {
@@ -93,15 +97,24 @@ public class BattleSystem : MonoBehaviour
             PlayerTurn();
         }
     }
-    void EndBattle() 
+    IEnumerator EndBattle() 
     {
         if (state == BattleState.WON)
         {
             dialogueText.text = "You won the battle!";
+            yield return new WaitForSeconds(2f);
+            enemyindex++;
+            if (enemyindex < enemyPrefabs.Length)
+            {
+                StartCoroutine(SetupBattle());
+            }
+            else
+                dialogueText.text = "You won the game!";
         }
         else if (state == BattleState.LOST)
         {
             dialogueText.text = "You were defeated.";
+            yield return new WaitForSeconds(2f);
         }
     }
     void PlayerTurn()
