@@ -26,6 +26,10 @@ public class BattleSystem : MonoBehaviour
 
     public TextMeshProUGUI dialogueText;
 
+    public int savedHp;
+    public int savedMana;
+    public bool IsFirstBattle = true;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -44,6 +48,11 @@ public class BattleSystem : MonoBehaviour
 
         dialogueText.text = "A " + enemyUnit.unitName + " approaches...";
 
+        if (IsFirstBattle == false)
+        {
+            playerUnit.curHp = savedHp;
+            playerUnit.curMana = savedMana;
+        }
         playerHUD.setHUD(playerUnit);
         enemyHUD.setHUD(enemyUnit);
 
@@ -103,6 +112,10 @@ public class BattleSystem : MonoBehaviour
         {
             dialogueText.text = "You won the battle!";
             yield return new WaitForSeconds(2f);
+            savedHp = playerUnit.curHp;
+            savedMana = playerUnit.curMana;
+            IsFirstBattle = false;
+
             enemyindex++;
             if (enemyindex < enemyPrefabs.Length)
             {
@@ -121,17 +134,48 @@ public class BattleSystem : MonoBehaviour
     {
         dialogueText.text = "Choose an action:";
     }
-    IEnumerator PlayerHeal()
+    IEnumerator PlayerRest()
     {
-        playerUnit.Heal(10);
+        playerUnit.Rest(10,10);
 
         playerHUD.SetHP(playerUnit.curHp);
-        dialogueText.text = "You healed yourself!";
+        playerHUD.setMana(playerUnit.curMana);
+        dialogueText.text = "You feel refreshed!";
 
         yield return new WaitForSeconds(2f);
         state = BattleState.ENEMYTURN;
 
         StartCoroutine(EnemyTurn());
+    }
+
+    IEnumerator PlayerMagic()
+    {
+        if (playerUnit.curMana >= 20)
+        {
+            bool isDead = enemyUnit.TakeDamage(30);
+            enemyHUD.SetHP(enemyUnit.curHp);
+            dialogueText.text = "Lightning bolt hit the enemy!";
+            playerUnit.curMana -= 20;
+            playerHUD.setMana(playerUnit.curMana);
+
+            yield return new WaitForSeconds(2f);
+
+            if (isDead)
+            {
+                state = BattleState.WON;
+                StartCoroutine(EndBattle());
+            }
+            else
+            {
+                state = BattleState.ENEMYTURN;
+                StartCoroutine(EnemyTurn());
+            }
+        }
+        else
+        {
+            dialogueText.text = "Not enough mana";
+            yield return new WaitForSeconds(2f);
+        }
     }
 
     public void OnAttackButton()
@@ -144,7 +188,14 @@ public class BattleSystem : MonoBehaviour
     {
         if (state != BattleState.PLAYERTURN)
             return;
-        StartCoroutine(PlayerHeal());
+        StartCoroutine(PlayerRest());
+    }
+
+    public void OnMagicButton()
+    {
+        if (state != BattleState.PLAYERTURN)
+            return;
+        StartCoroutine(PlayerMagic());
     }
 
 }

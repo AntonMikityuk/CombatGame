@@ -12,6 +12,9 @@ public class Unit : MonoBehaviour
     public int maxHp;
     public int curHp;
 
+    public int maxMana;
+    public int curMana;
+
     public bool TakeDamage(int dmg)
     {
         curHp -= dmg;
@@ -21,10 +24,13 @@ public class Unit : MonoBehaviour
         else
             return false;
     }
-    public void Heal(int hphealed)
+    public void Rest(int hphealed, int manarestored)
     {
         curHp += hphealed;
         if (curHp > maxHp)
             curHp = maxHp;
+        curMana += manarestored;
+        if (manarestored > maxMana)
+            curMana = maxMana;
     }
 }

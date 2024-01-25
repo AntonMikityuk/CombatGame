@@ -99,6 +99,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   unitName: Toriel
   unitLevel: 1
-  damage: 2
+  damage: 25
   maxHp: 20
   curHp: 20
+  maxMana: 100
+  curMana: 0

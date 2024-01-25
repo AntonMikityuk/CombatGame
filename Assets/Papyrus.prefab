@@ -102,3 +102,5 @@ MonoBehaviour:
   damage: 4
   maxHp: 80
   curHp: 40
+  maxMana: 100
+  curMana: 0
